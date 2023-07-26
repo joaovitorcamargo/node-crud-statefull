@@ -16,9 +16,21 @@ class Database {
         })
     }
 
-    select(table) {
-        const data = this.#tasks[table] ?? []
-        return data
+    select(table, search) {
+        const data = {
+            currentValue: this.#tasks[table] ?? []
+        }
+        
+        if(search) {
+            data.currentValue = data.currentValue.filter(row => {
+                return Object.entries(search).some(([key, value]) => {
+                    const changedCurrentValue = value.replaceAll(/%([0-2])+/g, ' ')
+                    return row[key] ? row[key].toLowerCase().includes(changedCurrentValue.toLowerCase()) : null
+                })
+            })
+        }
+
+        return data.currentValue.length ? data.currentValue : 'Nenhum Registro Encontrado'
     }
 
     create(table, data) {
@@ -47,6 +59,17 @@ class Database {
 
         this.#persist()
 
+    }
+
+    delete(table, id) {
+        const currentIndexTask = this.#tasks[table].findIndex((task) => task.id === id)
+        
+        if(currentIndexTask > -1) {
+            const currentTaskId = this.#tasks[table][currentIndexTask].id
+            this.#tasks[table] = this.#tasks[table].filter((task) => task.id !== currentTaskId)   
+        }
+
+        this.#persist()
     }
 
     #persist() {

@@ -9,7 +9,7 @@ const routes = [
         method: 'GET',
         path: handleRouteParams('/tasks'),
         handler: (req, res) => {
-            const tasks = database.select('tasks')
+            const tasks = database.select('tasks', req.query)
             return res.writeHead(200).end(JSON.stringify(tasks))
         }
     },
@@ -42,6 +42,17 @@ const routes = [
                 title,
                 description
             })
+
+            return res.writeHead(200).end()
+        }
+    },
+    {
+        method: 'DELETE',
+        path: handleRouteParams('/tasks/:id'),
+        handler:(req, res) => {
+            const {id} = req.params
+
+            database.delete('tasks',id)
 
             return res.writeHead(200).end()
         }

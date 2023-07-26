@@ -1,7 +1,8 @@
 const http = require('node:http')
 const { json } = require('./middleware/json');
 const { routes } = require('./routes');
-const { log } = require('node:console');
+const {generate} = require("csv-generate")
+const {parse} = require("csv-parse")
 
 const server = http.createServer(async (req, res) =>{
     const {method, url} = req
@@ -15,7 +16,15 @@ const server = http.createServer(async (req, res) =>{
     if(route) {
         const routeParams = url.match(route.path)
 
-        req.params = {...routeParams.groups}
+        const {query, ...params} = routeParams.groups
+        
+        req.params = params
+
+        req.query = query ? query.substr(1).split('&').reduce((accumulator, currentValue) => {
+            const [key, value] = currentValue.split('=')
+            accumulator[key] = value
+            return accumulator
+        }, {}) : null
 
         return route.handler(req, res)
     }
